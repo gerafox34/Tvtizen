@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>TV Player Samsung 4K UHD</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+body {
+    background: #0a0a0a;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    font-size: 18px; /* Увеличенный базовый шрифт для 4K */
+    line-height: 1.5;
+    overflow-x: hidden;
+}
+/* Адаптация под 4K разрешение */
+@media (min-width: 3840px) {
+    body {
+        font-size: 24px;
+        padding: 40px;
+    }
+}
+.header {
+    background: linear-gradient(135deg, #0055a4 0%, #003d75 100%);
+    padding: 25px;
+    text-align: center;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+.header h1 {
+    font-size: 28px;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+@media (min-width: 3840px) {
+    .header h1 {
+        font-size: 42px;
+    }
+}
+.tabs {
+    display: -webkit-box;
+    display: flex;
+    background: #1a1a1a;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.tab {
+    -webkit-box-flex: 1;
+    flex: 1;
+    padding: 18px 10px;
+    background: #2a2a2a;
+    border: none;
+    color: #bbb;
+    font-size: 16px;
+    text-align: center;
+    cursor: pointer;
+    border-right: 1px solid #3a3a3a;
+    transition: all 0.2s ease;
+}
+@media (min-width: 3840px) {
+    .tab {
+        padding: 25px 15px;
+        font-size: 22px;
+    }
+}
+.tab:last-child {
+    border-right: none;
+}
+.tab.active {
+    background: #0055a4;
+    color: #fff;
+    font-weight: bold;
+}
+.tab:focus {
+    outline: 3px solid #00a8ff;
+    outline-offset: -3px;
+}
+.channel-list {
+    display: -webkit-box;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+.channel-btn {
+    background: #1f1f1f;
+    border: 2px solid #333;
+    color: #fff;
+    padding: 18px 12px;
+    font-size: 15px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 8px;
+    width: calc(50% - 6px);
+    box-sizing: border-box;
+    height: 75px;
+    display: -webkit-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+@media (min-width: 768px) {
+    .channel-btn {
+        width: calc(33.33% - 8px);
+    }
+}
+@media (min-width: 3840px) {
+    .channel-btn {
+        width: calc(25% - 9px);
+        height: 100px;
+        font-size: 20px;
+        padding: 25px 15px;
+    }
+}
+.channel-btn.active {
+    background: #0055a4;
+    border-color: #00a8ff;
+    font-weight: bold;
+    transform: scale(1.02);
+}
+.channel-btn:focus {
+    outline: 3px solid #00a8ff;
+    outline-offset: 2px;
+}
+/* Плеер на весь экран */
+.player {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 1000;
+    display: none;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    flex-direction: column;
+}
+.player.active {
+    display: -webkit-box;
+    display: flex;
+}
+.player-header {
+    background: rgba(0, 85, 164, 0.95);
+    padding: 15px 25px;
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    align-items: center;
+    z-index: 1001;
+}
+@media (min-width: 3840px) {
+    .player-header {
+        padding: 25px 40px;
+    }
+}
+.player-title {
+    font-size: 18px;
+    font-weight: bold;
+}
+@media (min-width: 3840px) {
+    .player-title {
+        font-size: 28px;
+    }
+}
+.player-close {
+    background: #cc0000;
+    border: none;
+    color: #fff;
+    width: 45px;
+    height: 45px;
+    font-size: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+@media (min-width: 3840px) {
+    .player-close {
+        width: 60px;
+        height: 60px;
+        font-size: 30px;
+    }
+}
+.video-container {
+    -webkit-box-flex: 1;
+    flex: 1;
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    position: relative;
+}
+#video-player {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    object-fit: contain; /* По умолчанию сохраняем пропорции */
+    outline: none;
+}
+/* Классы для регулировки формата */
+.video-fit-contain { object-fit: contain; }
+.video-fit-cover { object-fit: cover; }
+.video-fit-fill { object-fit: fill; }
+
+.player-controls {
+    background: rgba(34, 34, 34, 0.95);
+    padding: 15px;
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-pack: center;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+@media (min-width: 3840px) {
+    .player-controls {
+        padding: 25px;
+        gap: 25px;
+    }
+}
+.ctrl-btn {
+    background: #0055a4;
+    border: none;
+    color: #fff;
+    padding: 12px 25px;
+    font-size: 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    min-width: 140px;
+    transition: background 0.2s;
+}
+@media (min-width: 3840px) {
+    .ctrl-btn {
+        padding: 18px 35px;
+        font-size: 22px;
+        min-width: 200px;
+        border-radius: 10px;
+    }
+}
+.ctrl-btn:hover {
+    background: #0066cc;
+}
+.ctrl-btn:focus {
+    outline: 3px solid #fff;
+}
+.ctrl-btn.ar-btn {
+    background: #444;
+    min-width: auto;
+}
+.ctrl-btn.ar-btn.active {
+    background: #00a8ff;
+}
+/* Радио панель */
+.radio-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(20, 20, 20, 0.98);
+    padding: 15px 25px;
+    border-top: 4px solid #0055a4;
+    display: none;
+    z-index: 900;
+    backdrop-filter: blur(5px);
+}
+@media (min-width: 3840px) {
+    .radio-panel {
+        padding: 25px 40px;
+    }
+}
+.radio-panel.active {
+    display: block;
+}
+.radio-info {
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+.radio-text {
+    -webkit-box-flex: 1;
+    flex: 1;
+    min-width: 200px;
+}
+.radio-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #fff;
+}
+@media (min-width: 3840px) {
+    .radio-name {
+        font-size: 26px;
+    }
+}
+.radio-status {
+    font-size: 14px;
+    color: #00ff00;
+}
+@media (min-width: 3840px) {
+    .radio-status {
+        font-size: 20px;
+    }
+}
+.radio-controls {
+    display: -webkit-box;
+    display: flex;
+    gap: 12px;
+}
+.radio-btn {
+    background: #0055a4;
+    border: none;
+    color: #fff;
+    width: 50px;
+    height: 50px;
+    font-size: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    transition: transform 0.1s;
+}
+@media (min-width: 3840px) {
+    .radio-btn {
+        width: 70px;
+        height: 70px;
+        font-size: 26px;
+    }
+}
+.radio-btn:active {
+    transform: scale(0.95);
+}
+.stop-btn {
+    background: #cc0000;
+}
+.info-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.85);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #0f0;
+    display: none;
+    z-index: 2000;
+    border-left: 4px solid #0f0;
+}
+@media (min-width: 3840px) {
+    .info-panel {
+        top: 40px;
+        right: 40px;
+        padding: 20px 30px;
+        font-size: 22px;
+        border-radius: 12px;
+    }
+}
+.pagination {
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-pack: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+.page-btn {
+    background: #333;
+    border: none;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+@media (min-width: 3840px) {
+    .page-btn {
+        padding: 15px 25px;
+        font-size: 20px;
+        border-radius: 8px;
+    }
+}
+.page-btn.active {
+    background: #0055a4;
+}
+.status-bar {
+    position: fixed;
+    bottom: 10px;
+    left: 20px;
+    color: #888;
+    font-size: 12px;
+    z-index: 800;
+}
+@media (min-width: 3840px) {
+    .status-bar {
+        bottom: 20px;
+        left: 40px;
+        font-size: 18px;
+    }
+}
+/* Индикатор разрешения */
+.resolution-indicator {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(0,0,0,0.7);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #aaa;
+    z-index: 1002;
+    display: none;
+}
+.resolution-indicator.show {
+    display: block;
+}
+</style>
+</head>
+<body>
+<div class="header">
+    <h1>📺 SAMSUNG 4K TV PLAYER</h1>
+</div>
+
+<div class="tabs">
+    <button class="tab active" onclick="showSection('tv')">📺 ТЕЛЕКАНАЛЫ</button>
+    <button class="tab" onclick="showSection('radio')">📻 РАДИО</button>
+    <button class="tab" onclick="showSection('webcams')">📹 КАМЕРЫ</button>
+</div>
+
+<div class="pagination" id="pagination"></div>
+
+<div id="tv-section">
+    <div class="channel-list" id="tv-channels"></div>
+</div>
+
+<!-- ИСПРАВЛЕНИЕ: ID изменен на radio-channels для корректной работы JS -->
+<div id="radio-section" style="display:none">
+    <div class="channel-list" id="radio-channels"></div>
+</div>
+
+<!-- ИСПРАВЛЕНИЕ: ID изменен на webcams-channels для корректной работы JS -->
+<div id="webcams-section" style="display:none">
+    <div class="channel-list" id="webcams-channels"></div>
+</div>
+
+<div class="player" id="player">
+    <div class="player-header">
+        <div class="player-title" id="player-title">Загрузка...</div>
+        <button class="player-close" onclick="closePlayer()">✕</button>
+    </div>
+    
+    <div class="video-container">
+        <div class="resolution-indicator" id="res-indicator">4K UHD</div>
+        <video id="video-player" controls playsinline webkit-playsinline></video>
+    </div>
+    
+    <div class="player-controls">
+        <button class="ctrl-btn" onclick="prevChannel()">◀ ПРЕДЫДУЩИЙ</button>
+        <button class="ctrl-btn" onclick="nextChannel()">СЛЕДУЮЩИЙ ▶</button>
+        <button class="ctrl-btn" onclick="toggleFullscreen()">📺 ПОЛНЫЙ ЭКРАН</button>
+        <!-- Добавлена функция регулировки формата/масштаба -->
+        <button class="ctrl-btn ar-btn" onclick="cycleAspectRatio()">📐 ФОРМАТ: <span id="ar-label">16:9</span></button>
+    </div>
+</div>
+
+<div class="radio-panel" id="radio-panel">
+    <div class="radio-info">
+        <div class="radio-text">
+            <div class="radio-name" id="radio-title">Выберите радиостанцию</div>
+            <div class="radio-status" id="radio-status">Готов к работе</div>
+        </div>
+        <div class="radio-controls">
+            <button class="radio-btn" onclick="toggleRadio()" id="radio-toggle">▶</button>
+            <button class="radio-btn stop-btn" onclick="stopRadio()">⏹</button>
+            <button class="radio-btn" onclick="nextRadio()">⏭</button>
+        </div>
+    </div>
+</div>
+
+<div class="info-panel" id="info-panel"></div>
+<div class="status-bar" id="status-bar">Готов к работе</div>
+
+<script>
+// Глобальные переменные
+var currentSection = 'tv';
+var currentIndex = -1;
+var audioElement = null;
+var currentPage = 0;
+var itemsPerPage = 12;
+var errorTimeout = null;
+var videoPlayer = null;
+var radioPanel = null;
+var currentAspectRatio = 'contain'; // contain, cover, fill
+
+// Настройка для 4K
+var is4K = window.innerWidth >= 3840 || window.innerHeight >= 2160;
+if (is4K) {
+    itemsPerPage = 16; // Больше элементов на странице для 4K
+}
+
+// Списки каналов
+var TV_CHANNELS = [
+    {name: "ЧЁ!", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_PERETZ/variant.m3u8"},
+    {name: "ПЕРЕЦ", url: "https://cdn4.skygo.mn/live/disk1/Che/HLSv3-FTA/Che.m3u8"},
+    {name: "ПЯТНИЦА ИНТЕР", url: "https://cdn4.skygo.mn/live/disk1/Friday/HLSv3-FTA/Friday.m3u8"},
+    {name: "ПЯТНИЦА", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_PYATNIZZA/variant.m3u8"},
+    {name: "МАТЧ ТВ", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_MATCHTV/variant.m3u8"},
+    {name: "РЕН ТВ", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_RENTV/variant.m3u8"},
+    {name: "СТС", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_STS/variant.m3u8"},
+    {name: "СТС LOVE", url: "http://zabava-htlive.cdn.ngenix.net/hls/CH_STSLOVE/variant.m3u8"},
+    {name: "ТНТ", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_TNT/variant.m3u8"},
+    {name: "ТНТ4", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_TNT4/variant.m3u8"},
+    {name: "ТНТ4+", url: "https://cdn4.skygo.mn/live/disk1/TNT4/HLSv3-FTA/TNT4.m3u8"},
+    {name: "Ю", url: "http://zabava-htlive.cdn.ngenix.net/hls/CH_U/variant.m3u8"},
+    {name: "СУББОТА", url: "http://zabava-htlive.cdn.ngenix.net/hls/CH_SUPER/variant.m3u8"},
+    {name: "2X2", url: "http://zabava-htlive.cdn.ngenix.net/hls/CH_2X2/variant.m3u8"},
+    {name: "МУЗ ТВ", url: "http://zabava-htlive.cdn.ngenix.net/hls/CH_MUZTV/variant.m3u8"},
+    {name: "KINO-1", url: "https://kino-1.catcast.tv/content/38617/index.m3u8"},
+    {name: "МИР", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_MIR/variant.m3u8"},
+    {name: "ТВ3", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_TV3/variant.m3u8"},
+    {name: "НТВ", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_NTV/variant.m3u8"},
+    {name: "РОССИЯ-1", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_RUSSIA1/variant.m3u8"},
+    {name: "РОССИЯ 24", url: "http://zabava-htlive.cdn.ngenix.net/hls/CH_RUSSIA24/variant.m3u8"},
+    {name: "1 ТВ", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_1TVSD/variant.m3u8"},
+    {name: "КАМИН", url: "https://rt-vlg-nn-htlive.cdn.ngenix.net/hls/CH_R05_KAMINTV/variant.m3u8"},
+    {name: "ТВ ЦЕНТР", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_TVC/variant.m3u8"},
+    {name: "5 КАНАЛ", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_5TV/variant.m3u8"},
+    {name: "ДОМАШНИЙ", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_DOMASHNIY/variant.m3u8"},
+    {name: "ДОМАШНИЙ+", url: "https://cdn4.skygo.mn/live/disk1/Domashni/HLSv3-FTA/Domashni.m3u8"},
+    {name: "РОССИЯ КУЛЬТУРА", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_RUSSIAK/variant.m3u8"},
+    {name: "ЗВЕЗДА", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_ZVEZDA/variant.m3u8"},
+    {name: "ОТР", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_OTR/variant.m3u8"},
+    {name: "ЗВЕЗДА+", url: "https://tvzvezda.bonus-tv.ru/cdn/zvezdaplus/mono.ts.m3u8"},
+    {name: "ТВ КРЫМ", url: "https://live1.1tvcrimea.ru/1tvcrimea.m3u8"},
+    {name: "СПАС", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_SPAS/variant.m3u8"},
+    {name: "EUROSPORT 4K", url: "http://6f1f83d9.akadatel.com/iptv/ET85VGCD8YTWLC/31475/index.m3u8"},
+    {name: "EUROSPORT 1 HD", url: "http://6f1f83d9.akadatel.com/iptv/ET85VGCD8YTWLC/228/index.m3u8"},
+    {name: "EUROSPORT 2 HD", url: "http://6f1f83d9.akadatel.com/iptv/ET85VGCD8YTWLC/234/index.m3u8"},
+    {name: "МОЯ ПЛАНЕТА", url: "http://194.143.148.28:8080/Nauka20/mpegts"}
+];
+
+var RADIO_STATIONS = [
+    {name: "ЕВРОПА ПЛЮС", url: "https://hls-01-regions.emgsound.ru/11_msk/playlist.m3u8"},
+    {name: "АВТОРАДИО", url: "https://pub0301.101.ru:8443/stream/air/aac/64/200"},
+    {name: "РУССКОЕ РАДИО", url: "https://rusradio.hostingradio.ru/rusradio96.aacp"},
+    {name: "DFM", url: "https://dfm.hostingradio.ru/dfm96.aacp"},
+    {name: "НАШЕ РАДИО", url: "https://nashe1.hostingradio.ru/nashe-256"},
+    {name: "RECORD LIQUID", url: "https://hls-01-radiorecord.hostingradio.ru/record-liquidfunk/playlist.m3u8"},
+    {name: "ROMANTIKA", url: "https://hls-01-gpm.hostingradio.ru/romantika495/playlist.m3u8"},
+    {name: "РАДИО ВЕРА", url: "https://radiovera.hostingradio.ru:8000/radiovera-256.mp3"},
+    {name: "ROCK RADIO", url: "https://rockradio.hostingradio.ru:8052/rock128.mp3"},
+    {name: "ДОРОЖНОЕ", url: "https://dorognoe.hostingradio.ru/radio"}
+];
+
+var WEBCAMS = [
+    {name: "АРГЕНТИНА - ПЛЯЖ", url: "https://video.estadodelmar.com.ar/mobile/torreon/index.m3u8"},
+    {name: "АРГЕНТИНА - ПОБЕРЕЖЬЕ", url: "https://video5.estadodelmar.com.ar/mobile/chapadmal5/index.m3u8"},
+    {name: "АРГЕНТИНА - ГРАНДЕ", url: "https://video5.estadodelmar.com.ar/mobile/yacht/index.m3u8"},
+    {name: "МАР-ДЕЛЬ-ПЛАТА", url: "https://video2.estadodelmar.com.ar/mobile/laperla/index.m3u8"},
+    {name: "КАБО-ВЕРДЕ", url: "https://s34.ipcamlive.com/streams/22dvnaeb0q8rgukre/stream.m3u8"},
+    {name: "КАЙМАНОВЫ ОСТРОВА", url: "https://s71.ipcamlive.com/streams/47beaupdde04nxbyg/stream.m3u8"},
+    {name: "КАЙМАНОВЫ - ОТЕЛЬ", url: "https://s132.ipcamlive.com/streams/84s7s1rmaxgqcihna/stream.m3u8"},
+    {name: "РИФ АКВАРИУМ", url: "https://5ad79df289937.streamlock.net/Aquarium-WebCams/Secret-Reef.stream/chunklist.m3u8"},
+    {name: "ПИНГВИНЫ", url: "https://5ad79df289937.streamlock.net/Aquarium-WebCams/Penguins.stream/chunklist.m3u8"},
+    {name: "НЬЮ-ЙОРК - ТАЙМС", url: "https://www.earthcam.net/projects/common/js/embedviewer.php?type=h264&vid=hdtimes10.flv"},
+    {name: "СТАТУЯ СВОБОДЫ", url: "https://www.earthcam.net/projects/common/js/embedviewer.php?type=h264&vid=statueoflibertyHD.flv"}
+];
+
+function getCurrentChannels() {
+    if (currentSection === 'tv') return TV_CHANNELS;
+    if (currentSection === 'radio') return RADIO_STATIONS;
+    return WEBCAMS;
+}
+
+function getSectionName(s) {
+    if (s === 'tv') return 'Телеканалы';
+    if (s === 'radio') return 'Радиостанции';
+    return 'Веб-камеры';
+}
+
+function updateStatus(msg) {
+    var el = document.getElementById('status-bar');
+    if (el) el.innerHTML = msg;
+    console.log(msg);
+}
+
+function showInfo(msg, duration) {
+    var panel = document.getElementById('info-panel');
+    panel.innerHTML = msg;
+    panel.style.display = 'block';
+    if (duration) {
+        setTimeout(function() {
+            var p = document.getElementById('info-panel');
+            if (p) p.style.display = 'none';
+        }, duration);
+    }
+}
+
+function stopAllMedia() {
+    closePlayer();
+    if (audioElement) {
+        audioElement.pause();
+        audioElement.src = '';
+        audioElement = null;
+    }
+    var rp = document.getElementById('radio-panel');
+    if (rp) rp.className = 'radio-panel';
+    if (errorTimeout) clearTimeout(errorTimeout);
+    errorTimeout = null;
+}
+
+function updatePagination(totalItems) {
+    var paginationDiv = document.getElementById('pagination');
+    var totalPages = Math.ceil(totalItems / itemsPerPage);
+    if (totalPages <= 1) {
+        paginationDiv.innerHTML = '';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < totalPages; i++) {
+        var activeClass = (i === currentPage) ? 'active' : '';
+        html += '<button class="page-btn ' + activeClass + '" onclick="goToPage(' + i + ')">' + (i+1) + '</button>';
+    }
+    paginationDiv.innerHTML = html;
+}
+
+function goToPage(page) {
+    currentPage = page;
+    loadChannels();
+}
+
+function loadChannels() {
+    // ИСПРАВЛЕНИЕ: Используем корректные ID контейнеров
+    var containerId = currentSection + '-channels';
+    var container = document.getElementById(containerId);
+    
+    if (!container) {
+        console.error('Контейнер не найден: ' + containerId);
+        return;
+    }
+
+    var channels = getCurrentChannels();
+    container.innerHTML = '';
+    var start = currentPage * itemsPerPage;
+    var end = Math.min(start + itemsPerPage, channels.length);
+    
+    for (var i = start; i < end; i++) {
+        var channel = channels[i];
+        var btn = document.createElement('button');
+        btn.className = 'channel-btn';
+        btn.innerHTML = channel.name;
+        btn.setAttribute('tabindex', '0');
+        (function(idx) {
+            btn.onclick = function() { playChannel(idx); };
+        })(i);
+        container.appendChild(btn);
+    }
+    updatePagination(channels.length);
+    updateStatus(getSectionName(currentSection) + ': ' + channels.length + ' каналов, стр. ' + (currentPage+1));
+}
+
+function showSection(section) {
+    if (currentSection === section) return;
+    stopAllMedia();
+    currentSection = section;
+    currentIndex = -1;
+    currentPage = 0;
+    
+    var tabs = document.getElementsByClassName('tab');
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].className = 'tab';
+        var onclickAttr = tabs[i].getAttribute('onclick');
+        if (onclickAttr && onclickAttr.indexOf(section) !== -1) {
+            tabs[i].className = 'tab active';
+        }
+    }
+    
+    document.getElementById('tv-section').style.display = 'none';
+    document.getElementById('radio-section').style.display = 'none';
+    document.getElementById('webcams-section').style.display = 'none';
+    document.getElementById(section + '-section').style.display = 'block';
+    
+    loadChannels();
+    updateStatus("Раздел: " + getSectionName(section));
+}
+
+function playChannel(index) {
+    var channels = getCurrentChannels();
+    if (index < 0 || index >= channels.length) return;
+    currentIndex = index;
+    var item = channels[index];
+    
+    var btns = document.querySelectorAll('#' + currentSection + '-channels .channel-btn');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].className = 'channel-btn';
+    }
+    var pageIndex = index - (currentPage * itemsPerPage);
+    if (btns[pageIndex]) btns[pageIndex].className = 'channel-btn active';
+    
+    if (currentSection === 'radio') {
+        playRadio(item);
+    } else {
+        playVideo(item);
+    }
+    updateStatus("Играет: " + item.name);
+    showInfo(item.name, 2000);
+}
+
+// Функция регулировки формата изображения
+function cycleAspectRatio() {
+    var modes = ['contain', 'cover', 'fill'];
+    var labels = {'contain': '16:9', 'cover': 'ZOOM', 'fill': 'FULL'};
+    
+    var currentIdx = modes.indexOf(currentAspectRatio);
+    var nextIdx = (currentIdx + 1) % modes.length;
+    currentAspectRatio = modes[nextIdx];
+    
+    videoPlayer.className = ''; // Сброс классов
+    videoPlayer.classList.add('video-fit-' + currentAspectRatio);
+    
+    document.getElementById('ar-label').innerHTML = labels[currentAspectRatio];
+    showInfo('Формат: ' + labels[currentAspectRatio], 1500);
+}
+
+function playVideo(item) {
+    if (audioElement) {
+        stopRadio();
+    }
+    
+    videoPlayer = document.getElementById('video-player');
+    videoPlayer.onerror = null;
+    videoPlayer.oncanplay = null;
+    if (errorTimeout) clearTimeout(errorTimeout);
+    
+    document.getElementById('player-title').innerHTML = item.name;
+    document.getElementById('player').className = 'player active';
+    
+    // Применяем текущий формат
+    videoPlayer.className = '';
+    videoPlayer.classList.add('video-fit-' + currentAspectRatio);
+    
+    // Показываем индикатор 4K если доступно
+    var resInd = document.getElementById('res-indicator');
+    if (is4K) {
+        resInd.classList.add('show');
+        setTimeout(function() { resInd.classList.remove('show'); }, 3000);
+    }
+    
+    videoPlayer.src = item.url;
+    videoPlayer.load();
+    
+    errorTimeout = setTimeout(function() {
+        if (videoPlayer.paused || videoPlayer.readyState === 0) {
+            showInfo("Загрузка... ожидание потока", 2000);
+        }
+    }, 8000);
+    
+    videoPlayer.onerror = function() {
+        if (errorTimeout) clearTimeout(errorTimeout);
+        showInfo("Ошибка потока, пробую следующий...", 2000);
+        setTimeout(nextChannel, 2500);
+    };
+    
+    videoPlayer.oncanplay = function() {
+        if (errorTimeout) clearTimeout(errorTimeout);
+        videoPlayer.play().catch(function(e) {
+            console.log('Autoplay blocked, waiting for interaction');
+        });
+    };
+    
+    videoPlayer.play().catch(function(e) {});
+    
+    // Авто-фуллскрин для ТВ
+    setTimeout(function() {
+        toggleFullscreen();
+    }, 500);
+}
+
+function playRadio(item) {
+    closePlayer();
+    
+    if (audioElement) {
+        audioElement.pause();
+        audioElement.src = '';
+        audioElement = null;
+    }
+    
+    audioElement = new Audio();
+    audioElement.src = item.url;
+    audioElement.crossOrigin = 'anonymous';
+    
+    audioElement.onplay = function() {
+        var toggleBtn = document.getElementById('radio-toggle');
+        if (toggleBtn) toggleBtn.innerHTML = '⏸';
+        var statusSpan = document.getElementById('radio-status');
+        if (statusSpan) statusSpan.innerHTML = '🔊 Играет';
+    };
+    
+    audioElement.onpause = function() {
+        var toggleBtn = document.getElementById('radio-toggle');
+        if (toggleBtn) toggleBtn.innerHTML = '▶';
+        var statusSpan = document.getElementById('radio-status');
+        if (statusSpan) statusSpan.innerHTML = '⏸ Пауза';
+    };
+    
+    audioElement.onerror = function() {
+        var statusSpan = document.getElementById('radio-status');
+        if (statusSpan) statusSpan.innerHTML = '❌ Ошибка';
+        showInfo("Ошибка радио, переключаю...", 2000);
+        setTimeout(nextChannel, 2500);
+    };
+    
+    var rp = document.getElementById('radio-panel');
+    rp.className = 'radio-panel active';
+    document.getElementById('radio-title').innerHTML = item.name;
+    document.getElementById('radio-status').innerHTML = '📡 Загрузка...';
+    
+    // ИСПРАВЛЕНИЕ: Убран setTimeout, воспроизведение сразу
+    audioElement.play().catch(function(e) {
+        var st = document.getElementById('radio-status');
+        if (st) st.innerHTML = '⚠️ Ожидание';
+        console.log('Radio play error:', e);
+        // Повторная попытка
+        setTimeout(function() {
+            audioElement.play().catch(function(err) {
+                showInfo("Не удалось запустить радио", 2000);
+            });
+        }, 1000);
+    });
+}
+
+function toggleRadio() {
+    if (audioElement) {
+        if (audioElement.paused) audioElement.play();
+        else audioElement.pause();
+    }
+}
+
+function stopRadio() {
+    if (audioElement) {
+        audioElement.pause();
+        audioElement.src = '';
+        audioElement = null;
+    }
+    var rp = document.getElementById('radio-panel');
+    if (rp) rp.className = 'radio-panel';
+    updateStatus("Радио остановлено");
+}
+
+function nextRadio() {
+    if (currentSection === 'radio') nextChannel();
+}
+
+function closePlayer() {
+    var playerDiv = document.getElementById('player');
+    if (playerDiv.className.indexOf('active') !== -1) {
+        var vp = document.getElementById('video-player');
+        vp.pause();
+        vp.src = '';
+        vp.onerror = null;
+        vp.oncanplay = null;
+        playerDiv.className = 'player';
+        if (errorTimeout) clearTimeout(errorTimeout);
+        
+        // Выход из фуллскрина
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+        
+        updateStatus("Плеер закрыт");
+    }
+}
+
+function toggleFullscreen() {
+    var player = document.getElementById('player');
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (player.requestFullscreen) player.requestFullscreen();
+        else if (player.webkitRequestFullscreen) player.webkitRequestFullscreen();
+    } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+}
+
+function prevChannel() {
+    var channels = getCurrentChannels();
+    if (channels.length === 0) return;
+    var newIndex = (currentIndex - 1 + channels.length) % channels.length;
+    var newPage = Math.floor(newIndex / itemsPerPage);
+    if (newPage !== currentPage) {
+        currentPage = newPage;
+        loadChannels();
+    }
+    playChannel(newIndex);
+}
+
+function nextChannel() {
+    var channels = getCurrentChannels();
+    if (channels.length === 0) return;
+    var newIndex = (currentIndex + 1) % channels.length;
+    var newPage = Math.floor(newIndex / itemsPerPage);
+    if (newPage !== currentPage) {
+        currentPage = newPage;
+        loadChannels();
+    }
+    playChannel(newIndex);
+}
+
+function setupKeyboard() {
+    document.body.setAttribute('tabindex', '0');
+    document.body.focus();
+    document.onkeydown = function(e) {
+        var key = e.keyCode || e.which;
+        if (key === 27) { // ESC / RETURN
+            closePlayer();
+            e.preventDefault();
+            return;
+        }
+        if (key === 37) { // LEFT
+            if (document.getElementById('player').className.indexOf('active') !== -1) {
+                prevChannel();
+            } else {
+                var tabs = ['tv', 'radio', 'webcams'];
+                var cur = tabs.indexOf(currentSection);
+                var newTab = (cur - 1 + tabs.length) % tabs.length;
+                showSection(tabs[newTab]);
+            }
+            e.preventDefault();
+        } else if (key === 39) { // RIGHT
+            if (document.getElementById('player').className.indexOf('active') !== -1) {
+                nextChannel();
+            } else {
+                var tabs = ['tv', 'radio', 'webcams'];
+                var cur = tabs.indexOf(currentSection);
+                var newTab = (cur + 1) % tabs.length;
+                showSection(tabs[newTab]);
+            }
+            e.preventDefault();
+        } else if (key === 13) { // ENTER
+            if (currentIndex >= 0) {
+                playChannel(currentIndex);
+            }
+            e.preventDefault();
+        } else if (key === 48) { // 0 - Toggle Aspect Ratio
+            if (document.getElementById('player').className.indexOf('active') !== -1) {
+                cycleAspectRatio();
+                e.preventDefault();
+            }
+        }
+    };
+}
+
+window.onload = function() {
+    updateStatus("Samsung 4K TV Player загружен");
+    showSection('tv');
+    setupKeyboard();
+    showInfo("Используйте ← → для навигации, 0 для формата", 4000);
+};
+</script>
+</body>
+</html>
